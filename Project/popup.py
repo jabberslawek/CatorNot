@@ -9,7 +9,7 @@ class PopUp:
         win.resizable(False, False)
         win.overrideredirect(True)
         win.attributes("-topmost", True)
-
+        win.configure(background='pink')
         win.update_idletasks()
         width = win.winfo_width()
         frm_width = win.winfo_rootx() - win.winfo_x()
@@ -22,7 +22,7 @@ class PopUp:
         win.geometry('{}x{}+{}+{}'.format(500, 100, x, y))
         win.deiconify()
 
-        message_label = Label(win, text=message, font='times 40')
+        message_label = Label(win, text=message, font='times 40', background='pink')
         message_label.pack()
 
         win.after(timer, lambda: win.destroy())

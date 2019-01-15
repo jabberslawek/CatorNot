@@ -8,9 +8,16 @@ from Project.popup import PopUp
 class App:
     def __init__(self, root):
         self.root = root
+
+        self.point_history = list()
+        self.TEAM_ONE = '-1'
+        self.TEAM_TWO = '1'
+
         #tutaj tworzą się wszystkie widgety
         #ta linijka zapewnia że okienko jest zawsze na wierzchu
         root.attributes("-topmost", True)
+
+        root.wm_title("KotCzyNie?")
         #tutaj tworzymy fonta dla wszystkich label w __init__, można zmienić na globalną później w sumie
         font_name = 'times'
         font_size = 40
@@ -59,13 +66,24 @@ class App:
     def add_point_to_gospodarze(self):
         self.gospodarze_score_int += 1
         self.gospodarze_score_str.set(str(self.gospodarze_score_int))
+        self.point_history.append(self.TEAM_ONE)
 
     def add_point_to_goscie(self):
         self.goscie_score_int += 1
         self.goscie_score_str.set(str(self.goscie_score_int))
+        self.point_history.append(self.TEAM_TWO)
+
+    def subtract_point_from_gospodarze(self):
+        self.gospodarze_score_int -= 1
+        self.gospodarze_score_str.set(str(self.gospodarze_score_int))
+
+
+    def subtract_point_from_goscie(self):
+        self.goscie_score_int -= 1
+        self.goscie_score_str.set(str(self.goscie_score_int))
 
     def check_if_cat(self):
-        #losowanie czy kot czy nie, losowanie działa, string się tworzy ale nwm dlaczego nie wyświetla się w okienku
+        #losowanie czy kot czy nie
         random_number = randint(1, 1000)
 
         if random_number <= 666:
@@ -74,7 +92,17 @@ class App:
             answer_string_raw = 'To nie jest kot'
         print(answer_string_raw)
 
-        PopUp(answer_string_raw, 4000)
+        PopUp(answer_string_raw, 1000)
+
+    def delete_point(self):
+        try:
+            team = self.point_history.pop()
+            if team == self.TEAM_ONE:
+                self.subtract_point_from_gospodarze()
+            if team == self.TEAM_TWO:
+                self.subtract_point_from_goscie()
+        except IndexError:
+            pass
 
     def on_keyboard_event(self, event):
         #hookmanager i jego eventy, te printy są dla debugowania, żeby wiedzieć jakie przyciski mają KeyId
@@ -84,6 +112,9 @@ class App:
         print('KeyID:', repr(event.KeyID))
         print( 'ScanCode:', repr(event.ScanCode))
         print('---')
+        print(self.point_history)
+        print('----')
+        print(self.gospodarze_score_int)
 
         try:
             # strzałka w lewo
@@ -95,6 +126,8 @@ class App:
             #strzałka w górę
             if event.KeyID == 38:
                 self.check_if_cat()
+            if event.KeyID == 40:
+                self.delete_point()
         finally:
             return True
 
