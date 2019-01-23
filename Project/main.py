@@ -2,17 +2,36 @@ from tkinter import *
 from PyHook3 import HookManager, HookConstants
 from tkinter.messagebox import showinfo
 from random import randint
+import PIL.Image
+import PIL.ImageTk
+from os import listdir
+from os.path import isfile, join
+from random import choice
 
 from Project.popup import PopUp
 
 class App:
     def __init__(self, root):
         self.root = root
+        self.root.configure(background='purple')
 
         self.point_history = list()
         self.TEAM_ONE = '-1'
         self.TEAM_TWO = '1'
 
+        self.fun_list = ''
+        self.FUN_CAT = '1'
+        self.FUN_NOCAT = '-1'
+        
+        #tworzy path do obrazków
+        mypath = 'cats/'
+        onlyfiles = [f for f in listdir(mypath) if isfile(join(mypath, f))]
+        gospodarze_img = choice(onlyfiles)
+        onlyfiles.remove(gospodarze_img)
+        gospodarze_img_path = join(mypath, gospodarze_img)
+        goscie_img_path = join(mypath, choice(onlyfiles))
+
+        print(onlyfiles)
         #tutaj tworzą się wszystkie widgety
         #ta linijka zapewnia że okienko jest zawsze na wierzchu
         root.attributes("-topmost", True)
@@ -39,15 +58,19 @@ class App:
         gospodarze_name_label = Label(root, textvariable=gospodarze_name, font=label_font)
         gospodarze_score_label = Label(root, textvariable=self.gospodarze_score_str, font=label_font)
 
-        gospodarze_name_label.grid(column=0, row=0)
-        gospodarze_score_label.grid(column=1, row=0)
+        #dodaje obrazek dla gospodarzy
+        gospodarze_cats_picture = PIL.Image.open(gospodarze_img_path)
+        gospodarze_cats_picture = gospodarze_cats_picture.resize((100, 100), PIL.Image.ANTIALIAS)
+        gospodarze_cats_picture = PIL.ImageTk.PhotoImage(gospodarze_cats_picture)
+        gospodarze_cat_label = Label(root, image=gospodarze_cats_picture)
+        gospodarze_cat_label.image = gospodarze_cats_picture
 
         #separator musi mieć swój własny widget, tak chyba jest najwygodniej
         separetor_raw_string = '  -  '
         separator_tk_string = StringVar()
         separator_tk_string.set(separetor_raw_string)
         separator_label = Label(root, textvariable=separator_tk_string, font=label_font)
-        separator_label.grid(column=3, row=0)
+
 
         #sekcja tworzenia widgetów dla gości
         goscie_name_string = '   Goście'
@@ -57,11 +80,25 @@ class App:
         goscie_name.set(goscie_name_string)
         self.goscie_score_str.set(str(self.goscie_score_int))
 
+        #tworzenie obrazka dla gosci
+        goscie_cats_picture = PIL.Image.open(goscie_img_path).transpose(PIL.Image.FLIP_LEFT_RIGHT)
+        goscie_cats_picture = goscie_cats_picture.resize((100, 100), PIL.Image.ANTIALIAS)
+        goscie_cats_picture = PIL.ImageTk.PhotoImage(goscie_cats_picture)
+        goscie_cat_label = Label(root, image=goscie_cats_picture)
+        goscie_cat_label.image = goscie_cats_picture
+
         goscie_name_label = Label(root, textvariable=goscie_name, font=label_font)
         goscie_score_label = Label(root, textvariable=self.goscie_score_str, font=label_font)
 
+        gospodarze_cat_label.grid(column=0, row=0)
+        gospodarze_name_label.grid(column=1, row=0)
+        gospodarze_score_label.grid(column=2, row=0)
+
+        separator_label.grid(column=3, row=0)
+
         goscie_score_label.grid(column=4, row=0)
         goscie_name_label.grid(column=5, row=0)
+        goscie_cat_label.grid(column=6, row=0)
 
     def add_point_to_gospodarze(self):
         self.gospodarze_score_int += 1
@@ -77,20 +114,29 @@ class App:
         self.gospodarze_score_int -= 1
         self.gospodarze_score_str.set(str(self.gospodarze_score_int))
 
-
     def subtract_point_from_goscie(self):
         self.goscie_score_int -= 1
         self.goscie_score_str.set(str(self.goscie_score_int))
 
     def check_if_cat(self):
         #losowanie czy kot czy nie
-        random_number = randint(1, 1000)
+        answer_positive = 'To jest kot'
+        answer_negative = 'To nie jest kot'
+        answer_string_raw = ''
 
-        if random_number <= 666:
-            answer_string_raw = 'To jest kot'
-        else:
-            answer_string_raw = 'To nie jest kot'
-        print(answer_string_raw)
+        if self.fun_list == '':
+            random_number = randint(1, 1000)
+
+            if random_number <= 500:
+                answer_string_raw = answer_positive
+            else:
+                answer_string_raw = answer_negative
+        elif self.fun_list == self.FUN_CAT:
+            answer_string_raw = answer_positive
+        elif self.fun_list == self.FUN_NOCAT:
+            answer_string_raw = answer_negative
+
+        self.fun_list = ''
 
         PopUp(answer_string_raw, 1000)
 
@@ -117,17 +163,27 @@ class App:
         print(self.gospodarze_score_int)
 
         try:
-            # strzałka w lewo
-            if event.KeyID == 37:
+            # J
+            if event.KeyID == 74:
                 self.add_point_to_gospodarze()
-            #strzałka w prawo
-            if event.KeyID == 39:
+            # L
+            if event.KeyID == 76:
                 self.add_point_to_goscie()
-            #strzałka w górę
-            if event.KeyID == 38:
+            # I
+            if event.KeyID == 73:
                 self.check_if_cat()
-            if event.KeyID == 40:
+            # K
+            if event.KeyID == 75:
                 self.delete_point()
+            # U
+            if event.KeyID == 85:
+                self.fun_list = self.FUN_CAT
+            # O
+            if event.KeyID == 79:
+                self.fun_list = self.FUN_NOCAT
+            # ;
+            if event.KeyID == 186:
+                self.fun_list = ''
         finally:
             return True
 
